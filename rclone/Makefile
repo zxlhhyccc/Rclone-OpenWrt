@@ -13,39 +13,17 @@ PKG_NAME:=rclone
 PKG_VERSION:=1.49.5
 PKG_RELEASE:=1
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/rclone/rclone.git
-PKG_SOURCE_VERSION:=5d3323605080509cf53de5980443c6d02fd50a48
-PKG_SOURCE_DATE:=20191011
-
 PKG_LICENSE:=GPLv3
 PKG_MAINTAINER:=ElonH <elonhhuang@gmail.com>
 
-PKG_BUILD_DEPENDS:=golang/host
-PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0 # https://github.com/openwrt/packages/issues/8498
-# TODO: mips-> ld: non-dynamic relocations refer to dynamic symbol __libc_start_main
-# https://www.linux-mips.org/archives/linux-mips/2009-05/msg00489.html
-GO_PKG:=github.com/rclone/rclone
-GO_PKG_EXCLUDES:=test
-
 include $(INCLUDE_DIR)/package.mk
-include $(TOPDIR)/feeds/packages/lang/golang/golang-package.mk
-
-# GO_PKG_LDFLAGS:=
-GO_PKG_LDFLAGS_X:=\
-	github.com/rclone/rclone/fs.Version=v$(PKG_VERSION)_$(PKG_SOURCE_DATE)\
-	main.Version=v$(PKG_VERSION) \
-	main.BuildUser=openwrt \
-	main.BuildHost=openwrt \
-	main.BuildStamp=$(SOURCE_DATE_EPOCH)
 
 define Package/$(PKG_NAME)
 	SECTION:=utils
 	CATEGORY:=Utilities
 	TITLE:=rsync for cloud storage.
 	URL:=https://rclone.org
-  	DEPENDS:=$(GO_ARCH_DEPENDS) 
+	# DEPENDS:=+fuse 
 endef
 
 define Package/$(PKG_NAME)/description
@@ -61,16 +39,42 @@ Cloud storage providers:
 	Yandex Disk, The local root/usr/binystem.
 endef
 
-define Package/$(PKG_NAME)/install
-	# echo "++++++++++++++++++"
-	# echo "$(PKG_INSTALL_DIR)"
-	# echo "$(1)"
-	# echo "$(GO_PKG_BUILD_BIN_DIR)"
-	# echo "++++++++++++++++++"
-
-	$(INSTALL_DIR) $(1)/usr/bin/
-	$(INSTALL_BIN) $(GO_PKG_BUILD_BIN_DIR)/rclone $(1)/usr/bin/
+define Build/Prepare
 endef
 
-$(eval $(call GoBinPackage,$(PKG_NAME)))
+define Build/Configure
+endef
+
+define Build/Compile
+endef
+
+define Package/$(PKG_NAME)/install
+	$(INSTALL_DIR) $(1)/usr/bin
+ifeq ($(ARCH),i386)
+	$(INSTALL_BIN) ./comp/i386_387) $(1)/usr/bin/rclone
+endif
+ifeq ($(ARCH),x86_64)
+	$(INSTALL_BIN) ./comp/amd64 $(1)/usr/bin/rclone
+endif
+ifeq ($(ARCH),arm)
+ifeq ($(BOARD),bcm53xx)
+	 $(INSTALL_BIN) ./comp/arm_7 $(1)/usr/bin/rclone
+else
+	 $(INSTALL_BIN) ./comp/arm_6 $(1)/usr/bin/rclone
+endif
+endif
+ifeq ($(ARCH),arm64)
+	$(INSTALL_BIN) ./comp/arm64 $(1)/usr/bin/rclone
+endif
+ifeq ($(ARCH),aarch64)
+	$(INSTALL_BIN) ./comp/arm64 $(1)/usr/bin/rclone
+endif
+ifeq ($(ARCH),mips)
+	$(INSTALL_BIN) ./comp/mips_softfloat $(1)/usr/bin/rclone
+endif
+ifeq ($(ARCH),mipsel)
+	$(INSTALL_BIN) ./comp/mipsle_softfloat $(1)/usr/bin/rclone
+endif
+endef
+
 $(eval $(call BuildPackage,$(PKG_NAME)))
