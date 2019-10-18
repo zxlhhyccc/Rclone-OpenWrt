@@ -51,7 +51,7 @@ endef
 define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/usr/bin
 ifeq ($(ARCH),i386)
-	$(INSTALL_BIN) ./comp/i386_387) $(1)/usr/bin/rclone
+	$(INSTALL_BIN) ./comp/amd64) $(1)/usr/bin/rclone
 endif
 ifeq ($(ARCH),x86_64)
 	$(INSTALL_BIN) ./comp/amd64 $(1)/usr/bin/rclone
@@ -73,7 +73,7 @@ ifeq ($(ARCH),mips)
 	$(INSTALL_BIN) ./comp/mips_softfloat $(1)/usr/bin/rclone
 endif
 ifeq ($(ARCH),mipsel)
-	$(INSTALL_BIN) ./comp/mipsle_softfloat $(1)/usr/bin/rclone
+	$(INSTALL_BIN) ./comp/mipsel_softfloat $(1)/usr/bin/rclone
 endif
 endef
 
